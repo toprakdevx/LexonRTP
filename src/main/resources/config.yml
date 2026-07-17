@@ -1,0 +1,166 @@
+# LexonRTP - config.yml
+
+settings:
+  # Language file (en = messages_en.yml, tr = messages.yml). Default: en
+  language: en
+  # Cooldown per player (seconds), stored in Redis.
+  cooldown-seconds: 60
+  # Apply cooldown even if location not found?
+  cooldown-on-fail: false
+  # /rtp (solo) countdown before teleport (seconds). 0 = instant.
+  rtp-countdown: 3
+
+# Cooldown storage. Redis for cross-server sync (optional);
+# falls back to SQLite (storage.db) for local persistence.
+redis:
+  enabled: false
+  host: "127.0.0.1"
+  port: 6379
+  password: ""
+  database: 0
+  timeout-ms: 2000
+  key-prefix: "lexonrtp:"
+  pool:
+    max-total: 16
+    max-idle: 8
+    min-idle: 1
+
+# Queue: players are queued and processed in limited batches per cycle (TPS friendly).
+queue:
+  enabled: true
+  players-per-cycle: 2
+  cycle-interval-ticks: 10
+  # Players required for rtpqueue (1v1). Match starts when this fills.
+  required-players: 2
+  # Countdown before teleport after match (seconds).
+  match-countdown: 10
+  # Distance (blocks) between matched players after teleport.
+  match-spacing: 10
+  # Announce to entire server when waiting for opponent?
+  announce-waiting: true
+
+# Safe location: chunks loaded asynchronously, teleport when safe spot found.
+location-finder:
+  max-attempts: 25
+  unsafe-blocks:
+    - LAVA
+    - WATER
+    - FIRE
+    - CACTUS
+    - MAGMA_BLOCK
+    - CAMPFIRE
+    - SOUL_CAMPFIRE
+    - SWEET_BERRY_BUSH
+    - POWDER_SNOW
+    - WITHER_ROSE
+  nether-scan-top: 120
+  nether-scan-bottom: 8
+
+# Worlds. End is disabled by default.
+# target-server: set to a BungeeCord/Velocity server name to enable
+# cross-server RTP (requires Redis enabled). Leave empty for local.
+worlds:
+  overworld:
+    world-name: "world"
+    enabled: true
+    min-radius: 500
+    max-radius: 10000
+    center-x: 0
+    center-z: 0
+    target-server: ""
+  nether:
+    world-name: "world_nether"
+    enabled: true
+    min-radius: 200
+    max-radius: 4000
+    center-x: 0
+    center-z: 0
+    target-server: ""
+  end:
+    world-name: "world_the_end"
+    enabled: false
+    min-radius: 300
+    max-radius: 5000
+    center-x: 0
+    center-z: 0
+    target-server: ""
+
+# /rtp solo menu (9x3). Slot 11 overworld, 13 nether, 15 end.
+gui:
+  title: "&8» &aʀᴀɴᴅᴏᴍ &fᴛᴇʟᴇᴘᴏʀᴛ"
+  size: 27
+  filler:
+    enabled: false
+    material: GRAY_STAINED_GLASS_PANE
+    name: " "
+  items:
+    overworld:
+      slot: 11
+      material: GRASS_BLOCK
+      world: overworld
+      name: "&a&lᴏᴠᴇʀᴡᴏʀʟᴅ"
+      lore:
+        - "&7ᴛᴇʟᴇᴘᴏʀᴛ ᴛᴏ ᴀ ʀᴀɴᴅᴏᴍ sᴀғᴇ"
+        - "&7ʟᴏᴄᴀᴛɪᴏɴ ɪɴ ᴛʜᴇ ᴏᴠᴇʀᴡᴏʀʟᴅ."
+        - ""
+        - "&8» &aᴄʟɪᴄᴋ ᴛᴏ ᴛᴇʟᴇᴘᴏʀᴛ"
+    nether:
+      slot: 13
+      material: NETHERRACK
+      world: nether
+      name: "&c&lɴᴇᴛʜᴇʀ"
+      lore:
+        - "&7ᴛᴇʟᴇᴘᴏʀᴛ ᴛᴏ ᴀ ʀᴀɴᴅᴏᴍ sᴀғᴇ"
+        - "&7ʟᴏᴄᴀᴛɪᴏɴ ɪɴ ᴛʜᴇ ɴᴇᴛʜᴇʀ."
+        - ""
+        - "&8» &cᴄʟɪᴄᴋ ᴛᴏ ᴛᴇʟᴇᴘᴏʀᴛ"
+    end:
+      slot: 15
+      material: END_STONE
+      world: end
+      name: "&5&lᴇɴᴅ"
+      lore:
+        - "&7ᴛᴇʟᴇᴘᴏʀᴛ ᴛᴏ ᴀ ʀᴀɴᴅᴏᴍ sᴀғᴇ"
+        - "&7ʟᴏᴄᴀᴛɪᴏɴ ɪɴ ᴛʜᴇ ᴇɴᴅ."
+        - ""
+        - "&8» &5ᴄʟɪᴄᴋ ᴛᴏ ᴛᴇʟᴇᴘᴏʀᴛ"
+
+# /rtpqueue 1v1 menu (9x3). Click a world button to join the queue.
+# %current% players in that queue, %required% players needed.
+queue-gui:
+  title: "&8» &aʀᴛᴘǫᴜᴇᴜᴇ &f1ᴠ1"
+  size: 27
+  items:
+    overworld:
+      slot: 11
+      material: GRASS_BLOCK
+      world: overworld
+      name: "&a&lᴏᴠᴇʀᴡᴏʀʟᴅ"
+      lore:
+        - "&7ᴊᴏɪɴ ᴛʜᴇ 1ᴠ1 ǫᴜᴇᴜᴇ ғᴏʀ ᴏᴠᴇʀᴡᴏʀʟᴅ."
+        - ""
+        - "&a● &7ᴘʟᴀʏᴇʀs ɪɴ ǫᴜᴇᴜᴇ&8: &f%current%&7/&f%required%"
+        - ""
+        - "&8» &aᴄʟɪᴄᴋ ᴛᴏ ᴊᴏɪɴ"
+    nether:
+      slot: 13
+      material: NETHERRACK
+      world: nether
+      name: "&c&lɴᴇᴛʜᴇʀ"
+      lore:
+        - "&7ᴊᴏɪɴ ᴛʜᴇ 1ᴠ1 ǫᴜᴇᴜᴇ ғᴏʀ ɴᴇᴛʜᴇʀ."
+        - ""
+        - "&a● &7ᴘʟᴀʏᴇʀs ɪɴ ǫᴜᴇᴜᴇ&8: &f%current%&7/&f%required%"
+        - ""
+        - "&8» &cᴄʟɪᴄᴋ ᴛᴏ ᴊᴏɪɴ"
+    end:
+      slot: 15
+      material: END_STONE
+      world: end
+      name: "&5&lᴇɴᴅ"
+      lore:
+        - "&7ᴊᴏɪɴ ᴛʜᴇ 1ᴠ1 ǫᴜᴇᴜᴇ ғᴏʀ ᴛʜᴇ ᴇɴᴅ."
+        - ""
+        - "&a● &7ᴘʟᴀʏᴇʀs ɪɴ ǫᴜᴇᴜᴇ&8: &f%current%&7/&f%required%"
+        - ""
+        - "&8» &5ᴄʟɪᴄᴋ ᴛᴏ ᴊᴏɪɴ"

@@ -1,0 +1,34 @@
+# LexonRTP - messages.yml
+# Turkce karakter kullanilmaz; Small Caps font ve & / &#rrggbb renk kodlari desteklenir.
+# Yer tutucular: %time% %count% %required% %queue% %player% %seconds% %prefix%
+
+prefix: "&8[&aʀᴛᴘ&8] &r"
+
+no-permission: "%prefix%&cʙᴜ ɪsʟᴇᴍ ɪᴄɪɴ ɪᴢɴɪɴ ʏᴏᴋ."
+players-only: "%prefix%&cʙᴜ ᴋᴏᴍᴜᴛ sᴀᴅᴇᴄᴇ ᴏʏᴜɴᴄᴜʟᴀʀ ɪᴄɪɴᴅɪʀ."
+
+cooldown-active: "%prefix%&cᴛᴇᴋʀᴀʀ ᴋᴜʟʟᴀɴᴍᴀᴋ ɪᴄɪɴ &e%time% &csᴀɴɪʏᴇ ʙᴇᴋʟᴇ."
+
+world-disabled: "%prefix%&cʙᴜ ᴅᴜɴʏᴀᴅᴀ ʀᴛᴘ ᴋᴀᴘᴀʟɪ."
+world-not-found: "%prefix%&cʜᴇᴅᴇғ ᴅᴜɴʏᴀ ʙᴜʟᴜɴᴀᴍᴀᴅɪ."
+invalid-world: "%prefix%&cɢᴇᴄᴇʀsɪᴢ ᴅᴜɴʏᴀ. &7/ʀᴛᴘ <ᴏᴠᴇʀᴡᴏʀʟᴅ|ɴᴇᴛʜᴇʀ|ᴇɴᴅ>"
+
+rtp-queued: "%prefix%&7ɪsɪɴʟᴀɴᴍᴀ ʜᴀᴢɪʀʟᴀɴɪʏᴏʀ..."
+queue-joined: "%prefix%&asɪʀᴀʏᴀ ᴀʟɪɴᴅɪɴ! &7ʀᴀᴋɪᴘ ʙᴇᴋʟᴇɴɪʏᴏʀ... &8(&f%count%&7/&f%required%&8)"
+queue-already: "%prefix%&eᴢᴀᴛᴇɴ sɪʀᴀᴅᴀsɪɴ. &7(&fsɪʀᴀ&7: &e%queue%&7)"
+queue-left: "%prefix%&csɪʀᴀᴅᴀɴ ᴄɪᴋᴛɪɴ."
+queue-not-in: "%prefix%&csɪʀᴀᴅᴀ ᴅᴇɢɪʟsɪɴ."
+
+queue-broadcast:
+  - "&a&lʀᴛᴘǫᴜᴇᴜᴇ"
+  - ""
+  - "&f%player% &7sɪʀᴀᴅᴀ &fʀᴀᴋɪᴘ ʙᴇᴋʟɪʏᴏʀ&7."
+  - "&a● &7ʙᴜɴᴜɴʟᴀ ᴋᴀᴛɪʟ&8: &f/ʀᴛᴘǫᴜᴇᴜᴇ"
+
+countdown-title: "&a&l%seconds%"
+countdown-subtitle: "&7ɪsɪɴʟᴀɴɪʏᴏʀsᴜɴ..."
+
+searching: "%prefix%&7ɢᴜᴠᴇɴʟɪ ʟᴏᴋᴀsʏᴏɴ ᴀʀᴀɴɪʏᴏʀ..."
+teleport-success: "%prefix%&aɪsɪɴʟᴀɴᴅɪɴ!"
+teleport-failed: "%prefix%&cɢᴜᴠᴇɴʟɪ ʙɪʀ ʏᴇʀ ʙᴜʟᴜɴᴀᴍᴀᴅɪ, ʟᴜᴛғᴇɴ ᴛᴇᴋʀᴀʀ ᴅᴇɴᴇ."
+moved-cancelled: "%prefix%&cʜᴀʀᴇᴋᴇᴛ ᴇᴛᴛɪɢɪɴ ɪᴄɪɴ ɪsɪɴʟᴀɴᴍᴀ ɪᴘᴛᴀʟ ᴇᴅɪʟᴅɪ."

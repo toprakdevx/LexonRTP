@@ -1,0 +1,25 @@
+name: LexonRTP
+version: ${project.version}
+main: com.lexon.rtp.LexonRTP
+api-version: "1.21"
+author: ToprakDev
+description: High performance, Folia supported Random Teleport plugin.
+folia-supported: true
+
+commands:
+  rtp:
+    description: Opens the random teleport menu or teleports directly.
+    usage: /rtp [overworld|nether|end]
+    aliases: [randomtp, wild]
+  rtpqueue:
+    description: Join or leave the 1v1 matchmaking queue.
+    usage: /rtpqueue [overworld|nether|end|leave]
+    aliases: [rtpq, queue]
+
+permissions:
+  lexonrtp.use:
+    description: Permission to use the RTP command.
+    default: true
+  lexonrtp.cooldown.bypass:
+    description: Permission to bypass cooldown.
+    default: op
