@@ -1,5 +1,7 @@
 package com.lexon.rtp.listener;
+
 import com.lexon.rtp.LexonRTP;
+import com.lexon.rtp.gui.GuiMenu;
 import com.lexon.rtp.gui.QueueMenu;
 import com.lexon.rtp.gui.RtpMenu;
 import org.bukkit.Location;
@@ -11,44 +13,44 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+
 public final class MenuListener implements Listener {
     private final LexonRTP plugin;
+
     public MenuListener(LexonRTP plugin) {
         this.plugin = plugin;
     }
+
     @EventHandler
     public void onClick(InventoryClickEvent event) {
         InventoryHolder holder = event.getInventory().getHolder();
         if (holder instanceof RtpMenu menu) {
-            event.setCancelled(true);
-            Player player = clicker(event, menu.getInventory());
-            if (player == null) {
-                return;
-            }
-            String worldKey = menu.worldFor(event.getRawSlot());
-            if (worldKey != null) {
-                player.closeInventory();
-                plugin.rtpService().request(player, worldKey, false);
-            }
+            handleClick(event, menu, false);
             return;
         }
         if (holder instanceof QueueMenu menu) {
-            event.setCancelled(true);
-            Player player = clicker(event, menu.getInventory());
-            if (player == null) {
-                return;
-            }
-            String worldKey = menu.worldFor(event.getRawSlot());
-            if (worldKey != null) {
-                player.closeInventory();
-                plugin.rtpService().request(player, worldKey, true);
-            }
+            handleClick(event, menu, true);
         }
     }
+
+    private void handleClick(InventoryClickEvent event, GuiMenu menu, boolean matchmaking) {
+        event.setCancelled(true);
+        Player player = clicker(event, menu.getInventory());
+        if (player == null) {
+            return;
+        }
+        String worldKey = menu.worldFor(event.getRawSlot());
+        if (worldKey != null) {
+            player.closeInventory();
+            plugin.rtpService().request(player, worldKey, matchmaking);
+        }
+    }
+
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         plugin.queue().remove(event.getPlayer().getUniqueId());
     }
+
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
         Location to = event.getTo();
@@ -66,6 +68,7 @@ public final class MenuListener implements Listener {
             plugin.messages().send(event.getPlayer(), "moved-cancelled");
         }
     }
+
     private Player clicker(InventoryClickEvent event, Inventory menuInventory) {
         if (!(event.getWhoClicked() instanceof Player player)) {
             return null;

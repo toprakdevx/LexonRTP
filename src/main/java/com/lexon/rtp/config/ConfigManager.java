@@ -1,13 +1,18 @@
 package com.lexon.rtp.config;
+
 import com.lexon.rtp.LexonRTP;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+
 public final class ConfigManager {
     private final LexonRTP plugin;
+
     private String language;
     private long cooldownSeconds;
     private boolean cooldownOnFail;
@@ -22,11 +27,14 @@ public final class ConfigManager {
     private int maxAttempts;
     private int netherScanTop;
     private int netherScanBottom;
+
     private final Set<Material> unsafeBlocks = EnumSet.noneOf(Material.class);
     private final Map<String, WorldSettings> worlds = new LinkedHashMap<>();
+
     public ConfigManager(LexonRTP plugin) {
         this.plugin = plugin;
     }
+
     public void load() {
         plugin.reloadConfig();
         var config = plugin.getConfig();
@@ -74,55 +82,72 @@ public final class ConfigManager {
             }
         }
     }
+
     public WorldSettings getWorld(String key) {
         return key == null ? null : worlds.get(key.toLowerCase());
     }
+
     public Map<String, WorldSettings> getWorlds() {
-        return worlds;
+        return Collections.unmodifiableMap(worlds);
     }
+
     public String getLanguage() {
         return language;
     }
+
     public long getCooldownSeconds() {
         return cooldownSeconds;
     }
+
     public boolean isCooldownOnFail() {
         return cooldownOnFail;
     }
+
     public int getRtpCountdown() {
         return rtpCountdown;
     }
+
     public boolean isQueueEnabled() {
         return queueEnabled;
     }
+
     public int getPlayersPerCycle() {
         return playersPerCycle;
     }
+
     public long getCycleIntervalTicks() {
         return cycleIntervalTicks;
     }
+
     public int getRequiredPlayers() {
         return requiredPlayers;
     }
+
     public int getMatchCountdown() {
         return matchCountdown;
     }
+
     public int getMatchSpacing() {
         return matchSpacing;
     }
+
     public boolean isAnnounceWaiting() {
         return announceWaiting;
     }
+
     public int getMaxAttempts() {
         return maxAttempts;
     }
+
     public int getNetherScanTop() {
         return netherScanTop;
     }
+
     public int getNetherScanBottom() {
         return netherScanBottom;
     }
+
     public Set<Material> getUnsafeBlocks() {
-        return unsafeBlocks;
+        return Collections.unmodifiableSet(unsafeBlocks);
     }
 }

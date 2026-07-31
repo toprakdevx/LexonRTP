@@ -1,4 +1,5 @@
 package com.lexon.rtp.queue;
+
 import com.lexon.rtp.LexonRTP;
 import com.lexon.rtp.config.WorldSettings;
 import com.lexon.rtp.util.Scheduler;
@@ -6,6 +7,7 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,23 +15,29 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public final class QueueManager {
     private final LexonRTP plugin;
     private final Scheduler scheduler;
     private final ConcurrentLinkedQueue<RtpRequest> soloQueue = new ConcurrentLinkedQueue<>();
-    private final Map<String, ConcurrentLinkedQueue<RtpRequest>> matchQueues = new ConcurrentHashMap<>();
+    private final Map<String, QueueState> matchQueues = new ConcurrentHashMap<>();
+    private final Map<UUID, String> playerQueue = new ConcurrentHashMap<>();
     private final Set<UUID> inQueue = ConcurrentHashMap.newKeySet();
     private final Set<UUID> soloCountdowns = ConcurrentHashMap.newKeySet();
     private ScheduledTask task;
+
     public QueueManager(LexonRTP plugin) {
         this.plugin = plugin;
         this.scheduler = plugin.scheduler();
     }
+
     public void start() {
         stop();
         long interval = plugin.config().getCycleIntervalTicks();
         this.task = scheduler.globalTimer(this::processCycle, interval, interval);
     }
+
     public void stop() {
         if (task != null) {
             try {
@@ -39,52 +47,84 @@ public final class QueueManager {
             task = null;
         }
     }
+
     public boolean isQueued(UUID uuid) {
         return inQueue.contains(uuid);
     }
+
     public int matchSize(String worldKey) {
-        ConcurrentLinkedQueue<RtpRequest> queue = matchQueues.get(worldKey.toLowerCase());
-        return queue == null ? 0 : queue.size();
+        QueueState state = matchQueues.get(worldKey.toLowerCase());
+        return state == null ? 0 : state.size.get();
     }
+
     public int positionOf(UUID uuid) {
-        for (ConcurrentLinkedQueue<RtpRequest> queue : matchQueues.values()) {
-            int index = 1;
-            for (RtpRequest request : queue) {
-                if (request.getPlayerId().equals(uuid)) {
-                    return index;
-                }
-                index++;
+        String queueKey = playerQueue.get(uuid);
+        if (queueKey == null) {
+            return 0;
+        }
+        QueueState state = matchQueues.get(queueKey);
+        if (state == null) {
+            return 0;
+        }
+        int index = 1;
+        for (RtpRequest request : state.requests) {
+            if (request.getPlayerId().equals(uuid)) {
+                return index;
             }
+            index++;
         }
         return 0;
     }
+
     public boolean enqueue(Player player, WorldSettings target, boolean matchmaking) {
         if (!inQueue.add(player.getUniqueId())) {
             return false;
         }
-        RtpRequest request = new RtpRequest(player.getUniqueId(), target, matchmaking);
+        RtpRequest request = new RtpRequest(player.getUniqueId(), target);
         if (matchmaking) {
-            matchQueues.computeIfAbsent(target.getKey().toLowerCase(), k -> new ConcurrentLinkedQueue<>()).add(request);
+            String key = target.getKey().toLowerCase();
+            QueueState state = matchQueues.computeIfAbsent(key, k -> new QueueState());
+            state.requests.add(request);
+            state.size.incrementAndGet();
+            playerQueue.put(player.getUniqueId(), key);
         } else {
             soloQueue.add(request);
+            playerQueue.put(player.getUniqueId(), "");
         }
         return true;
     }
+
     public void remove(UUID uuid) {
-        if (inQueue.remove(uuid)) {
+        if (!inQueue.remove(uuid)) {
+            soloCountdowns.remove(uuid);
+            return;
+        }
+        String queueKey = playerQueue.remove(uuid);
+        if (queueKey == null) {
+            soloCountdowns.remove(uuid);
+            return;
+        }
+        if (queueKey.isEmpty()) {
             soloQueue.removeIf(r -> r.getPlayerId().equals(uuid));
-            matchQueues.values().forEach(q -> q.removeIf(r -> r.getPlayerId().equals(uuid)));
+        } else {
+            QueueState state = matchQueues.get(queueKey);
+            if (state != null && state.requests.removeIf(r -> r.getPlayerId().equals(uuid))) {
+                state.size.decrementAndGet();
+            }
         }
         soloCountdowns.remove(uuid);
     }
+
     public boolean cancelSoloCountdown(UUID uuid) {
         return soloCountdowns.remove(uuid);
     }
+
     private void processCycle() {
         int budget = plugin.config().getPlayersPerCycle();
         processSolo(budget);
         processMatch(budget);
     }
+
     private void processSolo(int budget) {
         for (int i = 0; i < budget; i++) {
             RtpRequest request = soloQueue.poll();
@@ -92,23 +132,27 @@ public final class QueueManager {
                 break;
             }
             inQueue.remove(request.getPlayerId());
+            playerQueue.remove(request.getPlayerId());
             processSoloRequest(request);
         }
     }
+
     private void processMatch(int budget) {
         int required = plugin.config().getRequiredPlayers();
         int spacing = plugin.config().getMatchSpacing();
         int limit = Math.max(required, budget);
         int processed = 0;
-        for (ConcurrentLinkedQueue<RtpRequest> queue : matchQueues.values()) {
-            while (queue.size() >= required && processed + required <= limit) {
+        for (QueueState state : matchQueues.values()) {
+            while (state.size.get() >= required && processed + required <= limit) {
                 List<RtpRequest> group = new ArrayList<>(required);
                 for (int i = 0; i < required; i++) {
-                    RtpRequest request = queue.poll();
+                    RtpRequest request = state.requests.poll();
                     if (request == null) {
                         break;
                     }
+                    state.size.decrementAndGet();
                     inQueue.remove(request.getPlayerId());
+                    playerQueue.remove(request.getPlayerId());
                     group.add(request);
                 }
                 if (group.size() == required) {
@@ -118,6 +162,7 @@ public final class QueueManager {
             }
         }
     }
+
     private void processSoloRequest(RtpRequest request) {
         Player player = Bukkit.getPlayer(request.getPlayerId());
         if (player == null || !player.isOnline()) {
@@ -134,6 +179,7 @@ public final class QueueManager {
             startCountdown(request.getPlayerId(), location, target, seconds, false);
         });
     }
+
     private void processGroup(List<RtpRequest> group, int spacing) {
         WorldSettings target = group.get(0).getTarget();
         int seconds = plugin.config().getMatchCountdown();
@@ -155,6 +201,7 @@ public final class QueueManager {
             }
         });
     }
+
     private void startCountdown(UUID uuid, Location location, WorldSettings target, int seconds, boolean matchmaking) {
         Player player = Bukkit.getPlayer(uuid);
         if (player == null || !player.isOnline()) {
@@ -166,6 +213,7 @@ public final class QueueManager {
         }
         scheduler.entity(player, () -> tickCountdown(uuid, location, target, seconds, cancellable));
     }
+
     private void tickCountdown(UUID uuid, Location location, WorldSettings target, int remaining, boolean cancellable) {
         Player player = Bukkit.getPlayer(uuid);
         if (player == null || !player.isOnline()) {
@@ -186,6 +234,7 @@ public final class QueueManager {
         scheduler.entityLater(player,
                 () -> tickCountdown(uuid, location, target, remaining - 1, cancellable), 20L);
     }
+
     private void teleport(UUID uuid, Location location, WorldSettings target) {
         Player player = Bukkit.getPlayer(uuid);
         if (player == null || !player.isOnline()) {
@@ -201,6 +250,7 @@ public final class QueueManager {
             }
         }));
     }
+
     private void handleFailure(UUID uuid, WorldSettings target) {
         Player player = Bukkit.getPlayer(uuid);
         if (player == null) {
@@ -213,5 +263,10 @@ public final class QueueManager {
                 plugin.redis().setCooldown(uuid, plugin.config().getCooldownSeconds());
             }
         });
+    }
+
+    private static final class QueueState {
+        final ConcurrentLinkedQueue<RtpRequest> requests = new ConcurrentLinkedQueue<>();
+        final AtomicInteger size = new AtomicInteger();
     }
 }

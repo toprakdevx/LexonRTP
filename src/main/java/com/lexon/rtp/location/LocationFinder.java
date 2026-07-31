@@ -1,23 +1,32 @@
 package com.lexon.rtp.location;
+
 import com.lexon.rtp.LexonRTP;
 import com.lexon.rtp.config.WorldSettings;
 import com.lexon.rtp.util.Scheduler;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
+
 public final class LocationFinder {
     private final LexonRTP plugin;
     private final Scheduler scheduler;
+    private final Set<Material> unsafeBlocks;
+
     public LocationFinder(LexonRTP plugin) {
         this.plugin = plugin;
         this.scheduler = plugin.scheduler();
+        this.unsafeBlocks = plugin.config().getUnsafeBlocks();
     }
+
     public CompletableFuture<Location> find(WorldSettings settings) {
         CompletableFuture<Location> result = new CompletableFuture<>();
         World world = Bukkit.getWorld(settings.getWorldName());
@@ -28,6 +37,7 @@ public final class LocationFinder {
         attempt(world, settings, 0, result);
         return result;
     }
+
     public CompletableFuture<List<Location>> findGroup(WorldSettings settings, int count, int spacing) {
         CompletableFuture<List<Location>> out = new CompletableFuture<>();
         find(settings).whenComplete((base, error) -> {
@@ -41,6 +51,7 @@ public final class LocationFinder {
         });
         return out;
     }
+
     private void resolveMember(Location base, int count, int spacing, int index,
                                List<Location> result, CompletableFuture<List<Location>> out) {
         if (index >= count) {
@@ -54,6 +65,7 @@ public final class LocationFinder {
             resolveMember(base, count, spacing, index + 1, result, out);
         });
     }
+
     private CompletableFuture<Location> safeAtColumn(World world, int x, int z) {
         CompletableFuture<Location> future = new CompletableFuture<>();
         world.getChunkAtAsync(x >> 4, z >> 4, true).whenComplete((chunk, error) -> {
@@ -62,10 +74,11 @@ public final class LocationFinder {
                 return;
             }
             Location probe = new Location(world, x + 0.5, world.getMaxHeight() - 1, z + 0.5);
-            scheduler.region(probe, () -> future.complete(computeSafe(world, x, z)));
+            scheduler.region(probe, () -> future.complete(computeSafe(chunk, x, z)));
         });
         return future;
     }
+
     private void attempt(World world, WorldSettings settings, int tries, CompletableFuture<Location> result) {
         if (tries >= plugin.config().getMaxAttempts()) {
             result.complete(null);
@@ -84,7 +97,7 @@ public final class LocationFinder {
             }
             Location probe = new Location(world, x + 0.5, world.getMaxHeight() - 1, z + 0.5);
             scheduler.region(probe, () -> {
-                Location safe = computeSafe(world, x, z);
+                Location safe = computeSafe(chunk, x, z);
                 if (safe != null) {
                     result.complete(safe);
                 } else {
@@ -93,7 +106,11 @@ public final class LocationFinder {
             });
         });
     }
-    private Location computeSafe(World world, int x, int z) {
+
+    private Location computeSafe(Chunk chunk, int x, int z) {
+        World world = chunk.getWorld();
+        int localX = x & 15;
+        int localZ = z & 15;
         World.Environment env = world.getEnvironment();
         int startY;
         int bottomY;
@@ -108,17 +125,15 @@ public final class LocationFinder {
             }
         }
         for (int y = startY; y > bottomY; y--) {
-            Block ground = world.getBlockAt(x, y, z);
+            Block ground = chunk.getBlock(localX, y, localZ);
             Material groundType = ground.getType();
             if (!groundType.isSolid()) {
                 continue;
             }
-            if (isUnsafe(groundType)) {
+            if (unsafeBlocks.contains(groundType)) {
                 return null;
             }
-            Block feet = world.getBlockAt(x, y + 1, z);
-            Block head = world.getBlockAt(x, y + 2, z);
-            if (isPassable(feet) && isPassable(head)) {
+            if (isPassable(chunk, localX, y + 1, localZ) && isPassable(chunk, localX, y + 2, localZ)) {
                 return new Location(world, x + 0.5, y + 1, z + 0.5);
             }
             if (env != World.Environment.NETHER) {
@@ -127,15 +142,14 @@ public final class LocationFinder {
         }
         return null;
     }
-    private boolean isUnsafe(Material material) {
-        return plugin.config().getUnsafeBlocks().contains(material);
-    }
-    private boolean isPassable(Block block) {
+
+    private boolean isPassable(Chunk chunk, int x, int y, int z) {
+        Block block = chunk.getBlock(x, y, z);
         Material type = block.getType();
         if (type.isAir()) {
             return true;
         }
-        if (isUnsafe(type)) {
+        if (unsafeBlocks.contains(type)) {
             return false;
         }
         return !type.isSolid() && !block.isLiquid();

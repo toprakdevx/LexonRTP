@@ -1,21 +1,28 @@
 package com.lexon.rtp.config;
+
 import com.lexon.rtp.LexonRTP;
 import com.lexon.rtp.util.Text;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
 public final class MessageManager {
     private final LexonRTP plugin;
     private FileConfiguration messages;
     private String prefix = "";
+
     public MessageManager(LexonRTP plugin) {
         this.plugin = plugin;
     }
+
     public void load() {
         String lang = plugin.config().getLanguage();
         String fileName = lang.equals("tr") ? "messages.yml" : "messages_" + lang + ".yml";
@@ -34,10 +41,12 @@ public final class MessageManager {
         }
         this.prefix = messages.getString("prefix", "");
     }
+
     public String raw(String path) {
         String value = messages.getString(path, "&c[missing: " + path + "]");
         return value.replace("%prefix%", prefix);
     }
+
     public String get(String path, String... replacements) {
         String value = raw(path);
         for (int i = 0; i + 1 < replacements.length; i += 2) {
@@ -45,8 +54,9 @@ public final class MessageManager {
         }
         return Text.color(value);
     }
-    public java.util.List<String> getList(String path, String... replacements) {
-        java.util.List<String> out = new java.util.ArrayList<>();
+
+    public List<String> getList(String path, String... replacements) {
+        List<String> out = new ArrayList<>();
         for (String line : messages.getStringList(path)) {
             String value = line.replace("%prefix%", prefix);
             for (int i = 0; i + 1 < replacements.length; i += 2) {
@@ -56,6 +66,7 @@ public final class MessageManager {
         }
         return out;
     }
+
     public void send(CommandSender target, String path, String... replacements) {
         if (target == null) {
             return;

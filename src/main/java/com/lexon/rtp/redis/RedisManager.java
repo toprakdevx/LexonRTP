@@ -1,29 +1,35 @@
 package com.lexon.rtp.redis;
+
 import com.lexon.rtp.LexonRTP;
 import com.lexon.rtp.storage.SQLiteStorage;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+
 import java.util.UUID;
 import java.util.logging.Level;
+
 public final class RedisManager {
+    private static final long RECONNECT_TICKS = 20L * 60;
+
     private final LexonRTP plugin;
     private final SQLiteStorage sqlite;
-    private boolean enabled;
     private String keyPrefix = "lexonrtp:";
     private JedisPool pool;
+    private volatile boolean enabled;
     private volatile boolean connected;
+
     public RedisManager(LexonRTP plugin) {
         this.plugin = plugin;
         this.sqlite = new SQLiteStorage(plugin);
     }
+
     public void connect() {
         var config = plugin.getConfig();
         this.enabled = config.getBoolean("redis.enabled", true);
         this.keyPrefix = config.getString("redis.key-prefix", "lexonrtp:");
         sqlite.init();
         if (!enabled) {
-            this.connected = false;
             plugin.getLogger().info("Redis disabled - using SQLite (storage.db) for cooldown persistence.");
             return;
         }
@@ -49,23 +55,49 @@ public final class RedisManager {
             this.connected = true;
             plugin.getLogger().info("Redis connection successful (" + host + ":" + port + ").");
         } catch (Exception ex) {
-            this.connected = false;
             plugin.getLogger().log(Level.WARNING,
                     "Redis connection failed, falling back to SQLite: " + ex.getMessage());
         }
     }
+
+    public void startReconnect() {
+        if (!enabled || pool == null) {
+            return;
+        }
+        plugin.scheduler().globalTimer(this::ensureConnected, RECONNECT_TICKS, RECONNECT_TICKS);
+    }
+
+    private void ensureConnected() {
+        if (connected) {
+            return;
+        }
+        try (Jedis jedis = pool.getResource()) {
+            jedis.ping();
+            this.connected = true;
+            plugin.getLogger().info("Redis connection restored, switching back from SQLite.");
+        } catch (Exception ignored) {
+        }
+    }
+
     public boolean isConnected() {
         return connected;
     }
+
     public String statusText() {
         if (!enabled) {
             return "&7sqlite";
         }
         return connected ? "&aredis" : "&csqlite-fallback";
     }
+
     private String cooldownKey(UUID uuid) {
         return keyPrefix + "cooldown:" + uuid;
     }
+
+    private String pendingKey(UUID uuid) {
+        return keyPrefix + "pending:" + uuid;
+    }
+
     public long getRemaining(UUID uuid) {
         if (connected) {
             try (Jedis jedis = pool.getResource()) {
@@ -78,6 +110,7 @@ public final class RedisManager {
         }
         return sqlite.getRemaining(uuid);
     }
+
     public void setCooldown(UUID uuid, long seconds) {
         if (seconds <= 0) {
             return;
@@ -93,6 +126,7 @@ public final class RedisManager {
         }
         sqlite.setCooldown(uuid, seconds);
     }
+
     public void clearCooldown(UUID uuid) {
         if (connected) {
             try (Jedis jedis = pool.getResource()) {
@@ -102,30 +136,38 @@ public final class RedisManager {
         }
         sqlite.remove(uuid);
     }
+
     public void savePendingRtp(UUID uuid, String worldKey, boolean matchmaking) {
-        if (!connected) return;
+        if (!connected) {
+            return;
+        }
         try (Jedis jedis = pool.getResource()) {
-            jedis.setex(keyPrefix + "pending:" + uuid, 30, worldKey + ":" + matchmaking);
+            jedis.setex(pendingKey(uuid), 30, worldKey + ":" + matchmaking);
         } catch (Exception ignored) {
         }
     }
+
     public String getPendingRtp(UUID uuid) {
-        if (!connected) return null;
+        if (!connected) {
+            return null;
+        }
         try (Jedis jedis = pool.getResource()) {
-            return jedis.get(keyPrefix + "pending:" + uuid);
+            return jedis.get(pendingKey(uuid));
         } catch (Exception ignored) {
             return null;
         }
     }
+
     public void removePendingRtp(UUID uuid) {
-        if (connected) {
-            try (Jedis jedis = pool.getResource()) {
-                jedis.del(keyPrefix + "pending:" + uuid);
-            } catch (Exception ignored) {
-            }
+        if (!connected) {
+            return;
         }
-        sqlite.remove(uuid);
+        try (Jedis jedis = pool.getResource()) {
+            jedis.del(pendingKey(uuid));
+        } catch (Exception ignored) {
+        }
     }
+
     public void close() {
         if (pool != null) {
             try {

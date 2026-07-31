@@ -1,4 +1,5 @@
 package com.lexon.rtp.config;
+
 public final class WorldSettings {
     private final String key;
     private final String worldName;
@@ -8,6 +9,7 @@ public final class WorldSettings {
     private final int centerX;
     private final int centerZ;
     private final String targetServer;
+
     public WorldSettings(String key, String worldName, boolean enabled,
                          int minRadius, int maxRadius, int centerX, int centerZ,
                          String targetServer) {
@@ -20,27 +22,35 @@ public final class WorldSettings {
         this.centerZ = centerZ;
         this.targetServer = targetServer;
     }
+
     public String getKey() {
         return key;
     }
+
     public String getWorldName() {
         return worldName;
     }
+
     public boolean isEnabled() {
         return enabled;
     }
+
     public int getMinRadius() {
         return minRadius;
     }
+
     public int getMaxRadius() {
         return maxRadius;
     }
+
     public int getCenterX() {
         return centerX;
     }
+
     public int getCenterZ() {
         return centerZ;
     }
+
     public String getTargetServer() {
         return targetServer;
     }

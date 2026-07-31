@@ -1,15 +1,20 @@
 package com.lexon.rtp;
+
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.lexon.rtp.config.WorldSettings;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+
 import java.util.List;
+
 public final class RtpService {
     private final LexonRTP plugin;
+
     public RtpService(LexonRTP plugin) {
         this.plugin = plugin;
     }
+
     public void request(Player player, String worldKey, boolean matchmaking) {
         WorldSettings target = plugin.config().getWorld(worldKey);
         if (target == null) {
@@ -39,8 +44,7 @@ public final class RtpService {
             return;
         }
         if (plugin.queue().isQueued(player.getUniqueId())) {
-            plugin.messages().send(player, "queue-already",
-                    "%queue%", String.valueOf(plugin.queue().positionOf(player.getUniqueId())));
+            sendQueueAlready(player);
             return;
         }
         if (!player.hasPermission("lexonrtp.cooldown.bypass")) {
@@ -51,8 +55,7 @@ public final class RtpService {
             }
         }
         if (!plugin.queue().enqueue(player, target, matchmaking)) {
-            plugin.messages().send(player, "queue-already",
-                    "%queue%", String.valueOf(plugin.queue().positionOf(player.getUniqueId())));
+            sendQueueAlready(player);
             return;
         }
         if (!matchmaking) {
@@ -69,16 +72,27 @@ public final class RtpService {
             broadcastWaiting(player, count, required);
         }
     }
+
+    private void sendQueueAlready(Player player) {
+        plugin.messages().send(player, "queue-already",
+                "%queue%", String.valueOf(plugin.queue().positionOf(player.getUniqueId())));
+    }
+
     public void processCrossServer(Player player) {
         String data = plugin.redis().getPendingRtp(player.getUniqueId());
-        if (data == null) return;
+        if (data == null) {
+            return;
+        }
         plugin.redis().removePendingRtp(player.getUniqueId());
         String[] parts = data.split(":", 2);
-        if (parts.length < 2) return;
+        if (parts.length < 2) {
+            return;
+        }
         String worldKey = parts[0];
         boolean matchmaking = Boolean.parseBoolean(parts[1]);
         request(player, worldKey, matchmaking);
     }
+
     private void broadcastWaiting(Player waiting, int count, int required) {
         List<String> lines = plugin.messages().getList("queue-broadcast",
                 "%player%", waiting.getName(),
