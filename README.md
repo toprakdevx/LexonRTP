@@ -70,8 +70,8 @@ worlds:
 
 ## Requirements
 
-- Java 17+
-- Paper 1.20+ or Folia
+- Java 21
+- Paper 1.20.4+ or Folia (uses the region-based scheduler API)
 
 ## Links
 
