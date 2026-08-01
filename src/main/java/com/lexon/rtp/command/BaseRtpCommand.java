@@ -19,8 +19,7 @@ public abstract class BaseRtpCommand implements TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.messages().send(sender, "players-only");
-            return true;
+            return executeConsole(sender, args);
         }
         if (!player.hasPermission("lexonrtp.use")) {
             plugin.messages().send(player, "no-permission");
@@ -30,6 +29,11 @@ public abstract class BaseRtpCommand implements TabExecutor {
     }
 
     protected abstract boolean execute(Player player, String[] args);
+
+    protected boolean executeConsole(CommandSender sender, String[] args) {
+        plugin.messages().send(sender, "players-only");
+        return true;
+    }
 
     protected List<String> worldKeys(String prefix) {
         List<String> matches = new ArrayList<>();

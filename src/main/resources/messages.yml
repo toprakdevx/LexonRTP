@@ -34,3 +34,10 @@ searching: "%prefix%&7ɢᴜᴠᴇɴʟɪ ʟᴏᴋᴀsʏᴏɴ ᴀʀᴀɴɪʏᴏʀ.
 teleport-success: "%prefix%&aɪsɪɴʟᴀɴᴅɪɴ!"
 teleport-failed: "%prefix%&cɢᴜᴠᴇɴʟɪ ʙɪʀ ʏᴇʀ ʙᴜʟᴜɴᴀᴍᴀᴅɪ, ʟᴜᴛғᴇɴ ᴛᴇᴋʀᴀʀ ᴅᴇɴᴇ."
 moved-cancelled: "%prefix%&cʜᴀʀᴇᴋᴇᴛ ᴇᴛᴛɪɢɪɴ ɪᴄɪɴ ɪsɪɴʟᴀɴᴍᴀ ɪᴘᴛᴀʟ ᴇᴅɪʟᴅɪ."
+rtp-cancelled: "%prefix%&aɪsɪɴʟᴀɴᴍᴀ ɪᴘᴛᴀʟ ᴇᴅɪʟᴅɪ."
+rtp-cancel-none: "%prefix%&cɪᴘᴛᴀʟ ᴇᴅɪʟᴇᴄᴇᴋ ʙɪʀ ɪsɪɴʟᴀɴᴍᴀ ʏᴏᴋ."
+player-not-found: "%prefix%&cᴏʏᴜɴᴄᴜ ʙᴜʟᴜɴᴀᴍᴀᴅɪ ᴠᴇʏᴀ ᴏғʟɪɴᴇ."
+reloaded: "%prefix%&aʏᴀᴘɪʟᴀɴᴅɪʀᴍᴀ ᴠᴇ ᴍᴇsᴀᴊʟᴀʀ ʏᴇɴɪʟᴇɴᴅɪ."
+lexonrtp-help:
+  - "%prefix%&8» &aʟᴇxᴏɴʀᴛᴘ &7ᴋᴏᴍᴜᴛʟᴀʀɪ"
+  - "&a/lexonrtp reload &8» &7ᴋᴏɴғɪɢ ᴠᴇ ᴍᴇsᴀᴊʟᴀʀɪ ʏᴇɴɪʟᴇ"

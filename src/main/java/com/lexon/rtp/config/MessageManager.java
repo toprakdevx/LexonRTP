@@ -81,4 +81,15 @@ public final class MessageManager {
             target.sendMessage(message);
         }
     }
+
+    public void sendList(CommandSender target, String path, String... replacements) {
+        if (target == null) {
+            return;
+        }
+        for (String line : getList(path, replacements)) {
+            if (!line.isBlank()) {
+                target.sendMessage(line);
+            }
+        }
+    }
 }
