@@ -47,7 +47,9 @@ public final class SQLiteStorage {
         }
     }
 
-    public long getRemaining(UUID uuid) {
+    // A single SQLite connection is not thread-safe. Methods can be called from
+    // different region threads on Folia, so all access is synchronized.
+    public synchronized long getRemaining(UUID uuid) {
         if (select == null) {
             return 0L;
         }
@@ -70,7 +72,7 @@ public final class SQLiteStorage {
         return 0L;
     }
 
-    public void setCooldown(UUID uuid, long seconds) {
+    public synchronized void setCooldown(UUID uuid, long seconds) {
         if (insert == null) {
             return;
         }
@@ -84,7 +86,7 @@ public final class SQLiteStorage {
         }
     }
 
-    public void remove(UUID uuid) {
+    public synchronized void remove(UUID uuid) {
         if (delete == null) {
             return;
         }
@@ -96,7 +98,7 @@ public final class SQLiteStorage {
         }
     }
 
-    public void close() {
+    public synchronized void close() {
         if (connection != null) {
             try {
                 connection.close();
