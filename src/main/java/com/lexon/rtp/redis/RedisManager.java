@@ -44,11 +44,8 @@ public final class RedisManager {
             int timeout = config.getInt("redis.timeout-ms", 2000);
             String password = config.getString("redis.password", "");
             int database = config.getInt("redis.database", 0);
-            if (password == null || password.isEmpty()) {
-                this.pool = new JedisPool(poolConfig, host, port, timeout);
-            } else {
-                this.pool = new JedisPool(poolConfig, host, port, timeout, password, database);
-            }
+            this.pool = new JedisPool(poolConfig, host, port, timeout,
+                    password == null || password.isEmpty() ? null : password, database);
             try (Jedis jedis = pool.getResource()) {
                 jedis.ping();
             }
