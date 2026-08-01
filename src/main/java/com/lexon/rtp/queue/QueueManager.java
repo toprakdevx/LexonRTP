@@ -116,7 +116,17 @@ public final class QueueManager {
     }
 
     public boolean cancelSoloCountdown(UUID uuid) {
-        return soloCountdowns.remove(uuid);
+        boolean cancelled = soloCountdowns.remove(uuid);
+        if (cancelled) {
+            finish(uuid);
+        }
+        return cancelled;
+    }
+
+    private void finish(UUID uuid) {
+        inQueue.remove(uuid);
+        playerQueue.remove(uuid);
+        soloCountdowns.remove(uuid);
     }
 
     private void processCycle() {
@@ -131,8 +141,6 @@ public final class QueueManager {
             if (request == null) {
                 break;
             }
-            inQueue.remove(request.getPlayerId());
-            playerQueue.remove(request.getPlayerId());
             processSoloRequest(request);
         }
     }
@@ -151,13 +159,15 @@ public final class QueueManager {
                         break;
                     }
                     state.size.decrementAndGet();
-                    inQueue.remove(request.getPlayerId());
-                    playerQueue.remove(request.getPlayerId());
                     group.add(request);
                 }
                 if (group.size() == required) {
                     processGroup(group, spacing);
                     processed += required;
+                } else {
+                    for (RtpRequest request : group) {
+                        finish(request.getPlayerId());
+                    }
                 }
             }
         }
@@ -166,6 +176,7 @@ public final class QueueManager {
     private void processSoloRequest(RtpRequest request) {
         Player player = Bukkit.getPlayer(request.getPlayerId());
         if (player == null || !player.isOnline()) {
+            finish(request.getPlayerId());
             return;
         }
         WorldSettings target = request.getTarget();
@@ -204,7 +215,8 @@ public final class QueueManager {
 
     private void startCountdown(UUID uuid, Location location, WorldSettings target, int seconds, boolean matchmaking) {
         Player player = Bukkit.getPlayer(uuid);
-        if (player == null || !player.isOnline()) {
+        if (player == null || !player.isOnline() || !inQueue.contains(uuid)) {
+            finish(uuid);
             return;
         }
         boolean cancellable = !matchmaking && seconds > 0;
@@ -217,7 +229,7 @@ public final class QueueManager {
     private void tickCountdown(UUID uuid, Location location, WorldSettings target, int remaining, boolean cancellable) {
         Player player = Bukkit.getPlayer(uuid);
         if (player == null || !player.isOnline()) {
-            soloCountdowns.remove(uuid);
+            finish(uuid);
             return;
         }
         if (cancellable && !soloCountdowns.contains(uuid)) {
@@ -238,6 +250,7 @@ public final class QueueManager {
     private void teleport(UUID uuid, Location location, WorldSettings target) {
         Player player = Bukkit.getPlayer(uuid);
         if (player == null || !player.isOnline()) {
+            finish(uuid);
             return;
         }
         player.teleportAsync(location).whenComplete((success, error) -> scheduler.entity(player, () -> {
@@ -245,6 +258,7 @@ public final class QueueManager {
                 player.resetTitle();
                 plugin.messages().send(player, "teleport-success");
                 plugin.redis().setCooldown(uuid, plugin.config().getCooldownSeconds());
+                finish(uuid);
             } else {
                 handleFailure(uuid, target);
             }
@@ -254,6 +268,7 @@ public final class QueueManager {
     private void handleFailure(UUID uuid, WorldSettings target) {
         Player player = Bukkit.getPlayer(uuid);
         if (player == null) {
+            finish(uuid);
             return;
         }
         scheduler.entity(player, () -> {
@@ -262,6 +277,7 @@ public final class QueueManager {
             if (plugin.config().isCooldownOnFail()) {
                 plugin.redis().setCooldown(uuid, plugin.config().getCooldownSeconds());
             }
+            finish(uuid);
         });
     }
 
