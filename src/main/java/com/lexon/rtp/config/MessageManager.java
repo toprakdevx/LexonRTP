@@ -26,6 +26,11 @@ public final class MessageManager {
     public void load() {
         String lang = plugin.config().getLanguage();
         String fileName = lang.equals("tr") ? "messages.yml" : "messages_" + lang + ".yml";
+        if (plugin.getResource(fileName) == null) {
+            plugin.getLogger().warning("Language file '" + fileName
+                    + "' not found, falling back to messages_en.yml.");
+            fileName = "messages_en.yml";
+        }
         File file = new File(plugin.getDataFolder(), fileName);
         if (!file.exists()) {
             plugin.saveResource(fileName, false);
