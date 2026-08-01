@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public final class QueueManager {
     private final LexonRTP plugin;
@@ -54,7 +53,7 @@ public final class QueueManager {
 
     public int matchSize(String worldKey) {
         QueueState state = matchQueues.get(worldKey.toLowerCase());
-        return state == null ? 0 : state.size.get();
+        return state == null ? 0 : state.requests.size();
     }
 
     public int positionOf(UUID uuid) {
@@ -85,7 +84,6 @@ public final class QueueManager {
             String key = target.getKey().toLowerCase();
             QueueState state = matchQueues.computeIfAbsent(key, k -> new QueueState());
             state.requests.add(request);
-            state.size.incrementAndGet();
             playerQueue.put(player.getUniqueId(), key);
         } else {
             soloQueue.add(request);
@@ -108,8 +106,8 @@ public final class QueueManager {
             soloQueue.removeIf(r -> r.getPlayerId().equals(uuid));
         } else {
             QueueState state = matchQueues.get(queueKey);
-            if (state != null && state.requests.removeIf(r -> r.getPlayerId().equals(uuid))) {
-                state.size.decrementAndGet();
+            if (state != null) {
+                state.requests.removeIf(r -> r.getPlayerId().equals(uuid));
             }
         }
         soloCountdowns.remove(uuid);
@@ -151,14 +149,13 @@ public final class QueueManager {
         int limit = Math.max(required, budget);
         int processed = 0;
         for (QueueState state : matchQueues.values()) {
-            while (state.size.get() >= required && processed + required <= limit) {
+            while (state.requests.size() >= required && processed + required <= limit) {
                 List<RtpRequest> group = new ArrayList<>(required);
                 for (int i = 0; i < required; i++) {
                     RtpRequest request = state.requests.poll();
                     if (request == null) {
                         break;
                     }
-                    state.size.decrementAndGet();
                     group.add(request);
                 }
                 if (group.size() == required) {
@@ -283,6 +280,5 @@ public final class QueueManager {
 
     private static final class QueueState {
         final ConcurrentLinkedQueue<RtpRequest> requests = new ConcurrentLinkedQueue<>();
-        final AtomicInteger size = new AtomicInteger();
     }
 }
