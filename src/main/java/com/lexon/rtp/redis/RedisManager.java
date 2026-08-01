@@ -26,7 +26,7 @@ public final class RedisManager {
 
     public void connect() {
         var config = plugin.getConfig();
-        this.enabled = config.getBoolean("redis.enabled", true);
+        this.enabled = config.getBoolean("redis.enabled", false);
         this.keyPrefix = config.getString("redis.key-prefix", "lexonrtp:");
         sqlite.init();
         if (!enabled) {
