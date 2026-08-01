@@ -26,6 +26,7 @@ redis:
     min-idle: 1
 
 # Queue: players are queued and processed in limited batches per cycle (TPS friendly).
+# enabled: if false, matchmaking (/rtpqueue) is disabled; /rtp solo still works.
 queue:
   enabled: true
   players-per-cycle: 2

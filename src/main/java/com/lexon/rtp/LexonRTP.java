@@ -37,9 +37,9 @@ public final class LexonRTP extends JavaPlugin {
         this.locationFinder = new LocationFinder(this);
         this.queueManager = new QueueManager(this);
         this.rtpService = new RtpService(this);
-        if (configManager.isQueueEnabled()) {
-            this.queueManager.start();
-        }
+        // The queue cycle must always run so /rtp solo requests are processed;
+        // queue.enabled only gates matchmaking (see RtpService#request).
+        this.queueManager.start();
         register("rtp", new RtpCommand(this));
         register("rtpqueue", new RtpQueueCommand(this));
         getServer().getPluginManager().registerEvents(new MenuListener(this), this);
