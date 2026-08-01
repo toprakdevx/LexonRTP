@@ -16,8 +16,8 @@ import java.util.List;
 
 public final class MessageManager {
     private final LexonRTP plugin;
-    private FileConfiguration messages;
-    private String prefix = "";
+    private volatile FileConfiguration messages;
+    private volatile String prefix = "";
 
     public MessageManager(LexonRTP plugin) {
         this.plugin = plugin;

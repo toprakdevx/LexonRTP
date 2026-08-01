@@ -4,11 +4,13 @@ import com.lexon.rtp.LexonRTP;
 import com.lexon.rtp.gui.GuiMenu;
 import com.lexon.rtp.gui.QueueMenu;
 import com.lexon.rtp.gui.RtpMenu;
+import com.lexon.rtp.util.Text;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
@@ -47,6 +49,13 @@ public final class MenuListener implements Listener {
     }
 
     @EventHandler
+    public void onDrag(InventoryDragEvent event) {
+        if (event.getInventory().getHolder() instanceof GuiMenu) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         plugin.queue().remove(event.getPlayer().getUniqueId());
     }
@@ -64,7 +73,7 @@ public final class MenuListener implements Listener {
             return;
         }
         if (plugin.queue().cancelSoloCountdown(event.getPlayer().getUniqueId())) {
-            event.getPlayer().resetTitle();
+            Text.resetTitle(event.getPlayer());
             plugin.messages().send(event.getPlayer(), "moved-cancelled");
         }
     }

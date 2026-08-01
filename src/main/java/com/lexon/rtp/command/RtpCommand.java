@@ -2,6 +2,7 @@ package com.lexon.rtp.command;
 
 import com.lexon.rtp.LexonRTP;
 import com.lexon.rtp.gui.RtpMenu;
+import com.lexon.rtp.util.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -23,7 +24,7 @@ public final class RtpCommand extends BaseRtpCommand {
         }
         if (args.length == 1 && args[0].equalsIgnoreCase("cancel")) {
             if (plugin.queue().cancelSolo(player.getUniqueId())) {
-                player.resetTitle();
+                Text.resetTitle(player);
                 plugin.messages().send(player, "rtp-cancelled");
             } else {
                 plugin.messages().send(player, "rtp-cancel-none");

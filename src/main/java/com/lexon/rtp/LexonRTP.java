@@ -108,6 +108,7 @@ public final class LexonRTP extends JavaPlugin {
         messageManager.load();
         this.locationFinder = new LocationFinder(this);
         queueManager.start();
+        redisManager.reload();
         getLogger().info("LexonRTP reloaded.");
     }
 }

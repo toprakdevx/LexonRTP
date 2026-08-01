@@ -3,6 +3,7 @@ package com.lexon.rtp.queue;
 import com.lexon.rtp.LexonRTP;
 import com.lexon.rtp.config.WorldSettings;
 import com.lexon.rtp.util.Scheduler;
+import com.lexon.rtp.util.Text;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -26,6 +27,7 @@ public final class QueueManager {
     private final Map<UUID, String> playerQueue = new ConcurrentHashMap<>();
     private final Set<UUID> inQueue = ConcurrentHashMap.newKeySet();
     private final Set<UUID> soloCountdowns = ConcurrentHashMap.newKeySet();
+    private final Map<UUID, Long> countdownEpoch = new ConcurrentHashMap<>();
     private ScheduledTask task;
 
     public QueueManager(LexonRTP plugin) {
@@ -97,11 +99,13 @@ public final class QueueManager {
     public void remove(UUID uuid) {
         if (!inQueue.remove(uuid)) {
             soloCountdowns.remove(uuid);
+            countdownEpoch.remove(uuid);
             return;
         }
         String queueKey = playerQueue.remove(uuid);
         if (queueKey == null) {
             soloCountdowns.remove(uuid);
+            countdownEpoch.remove(uuid);
             return;
         }
         if (queueKey.isEmpty()) {
@@ -113,6 +117,7 @@ public final class QueueManager {
             }
         }
         soloCountdowns.remove(uuid);
+        countdownEpoch.remove(uuid);
     }
 
     public boolean cancelSoloCountdown(UUID uuid) {
@@ -139,6 +144,11 @@ public final class QueueManager {
         inQueue.remove(uuid);
         playerQueue.remove(uuid);
         soloCountdowns.remove(uuid);
+        countdownEpoch.remove(uuid);
+    }
+
+    private long startEpoch(UUID uuid) {
+        return countdownEpoch.compute(uuid, (k, v) -> v == null ? 1L : v + 1L);
     }
 
     private void processCycle() {
@@ -228,23 +238,28 @@ public final class QueueManager {
 
     private void startCountdown(UUID uuid, Location location, WorldSettings target, int seconds,
                                 boolean matchmaking, CommandSender requester) {
+        boolean cancellable = !matchmaking && seconds > 0;
+        if (cancellable) {
+            soloCountdowns.add(uuid);
+        }
+        long epoch = startEpoch(uuid);
         Player player = Bukkit.getPlayer(uuid);
         if (player == null || !player.isOnline() || !inQueue.contains(uuid)) {
             finish(uuid);
             return;
         }
-        boolean cancellable = !matchmaking && seconds > 0;
-        if (cancellable) {
-            soloCountdowns.add(uuid);
-        }
-        scheduler.entity(player, () -> tickCountdown(uuid, location, target, seconds, cancellable, requester));
+        scheduler.entity(player,
+                () -> tickCountdown(uuid, location, target, seconds, cancellable, requester, epoch));
     }
 
     private void tickCountdown(UUID uuid, Location location, WorldSettings target, int remaining,
-                               boolean cancellable, CommandSender requester) {
+                               boolean cancellable, CommandSender requester, long epoch) {
         Player player = Bukkit.getPlayer(uuid);
         if (player == null || !player.isOnline()) {
             finish(uuid);
+            return;
+        }
+        if (countdownEpoch.getOrDefault(uuid, -1L) != epoch) {
             return;
         }
         if (cancellable && !soloCountdowns.contains(uuid)) {
@@ -259,7 +274,7 @@ public final class QueueManager {
         String subtitle = plugin.messages().get("countdown-subtitle", "%seconds%", String.valueOf(remaining));
         player.sendTitle(title, subtitle, 0, 25, 5);
         scheduler.entityLater(player,
-                () -> tickCountdown(uuid, location, target, remaining - 1, cancellable, requester), 20L);
+                () -> tickCountdown(uuid, location, target, remaining - 1, cancellable, requester, epoch), 20L);
     }
 
     private void teleport(UUID uuid, Location location, WorldSettings target, CommandSender requester) {
@@ -270,7 +285,7 @@ public final class QueueManager {
         }
         player.teleportAsync(location).whenComplete((success, error) -> scheduler.entity(player, () -> {
             if (Boolean.TRUE.equals(success)) {
-                player.resetTitle();
+                Text.resetTitle(player);
                 plugin.messages().send(player, "teleport-success");
                 if (requester != null && requester != player) {
                     plugin.messages().send(requester, "admin-rtp-success",
@@ -287,12 +302,12 @@ public final class QueueManager {
 
     private void handleFailure(UUID uuid, WorldSettings target, CommandSender requester) {
         Player player = Bukkit.getPlayer(uuid);
-        if (player == null) {
+        if (player == null || !inQueue.contains(uuid)) {
             finish(uuid);
             return;
         }
         scheduler.entity(player, () -> {
-            player.resetTitle();
+            Text.resetTitle(player);
             plugin.messages().send(player, "teleport-failed");
             if (requester != null && requester != player) {
                 plugin.messages().send(requester, "admin-rtp-fail", "%player%", player.getName());

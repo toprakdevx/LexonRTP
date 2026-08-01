@@ -38,7 +38,7 @@ public final class RtpQueueCommand extends BaseRtpCommand {
         if (args.length == 1) {
             String prefix = args[0].toLowerCase(Locale.ROOT);
             List<String> matches = worldKeys(prefix);
-            if ("leave".startsWith(prefix)) {
+            if (!matches.contains("leave") && "leave".startsWith(prefix)) {
                 matches.add("leave");
             }
             return matches;

@@ -1,9 +1,15 @@
 package com.lexon.rtp.util;
 
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.entity.Player;
 
 public final class Text {
     private Text() {
+    }
+
+    public static void resetTitle(Player player) {
+        player.resetTitle();
+        player.sendTitle("", "", 0, 0, 0);
     }
 
     public static String color(String input) {

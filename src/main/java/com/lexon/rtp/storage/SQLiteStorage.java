@@ -13,10 +13,10 @@ import java.util.UUID;
 
 public final class SQLiteStorage {
     private final LexonRTP plugin;
-    private Connection connection;
-    private PreparedStatement select;
-    private PreparedStatement insert;
-    private PreparedStatement delete;
+    private volatile Connection connection;
+    private volatile PreparedStatement select;
+    private volatile PreparedStatement insert;
+    private volatile PreparedStatement delete;
 
     public SQLiteStorage(LexonRTP plugin) {
         this.plugin = plugin;
