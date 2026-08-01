@@ -17,6 +17,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 
 public final class LocationFinder {
+    private static final int MEMBER_COLUMN_RETRIES = 5;
+
     private final LexonRTP plugin;
     private final Scheduler scheduler;
     private final Set<Material> unsafeBlocks;
@@ -58,11 +60,43 @@ public final class LocationFinder {
             out.complete(result);
             return;
         }
-        int x = base.getBlockX() + index * spacing;
-        int z = base.getBlockZ();
-        safeAtColumn(base.getWorld(), x, z).whenComplete((loc, error) -> {
-            result.add(loc != null ? loc : base.clone().add(index * spacing, 0, 0));
+        memberLocation(base, index, spacing).whenComplete((loc, error) -> {
+            if (loc == null) {
+                // Never teleport anyone to an unverified location: fail the group
+                // when a member's safe spot cannot be found.
+                out.complete(null);
+                return;
+            }
+            result.add(loc);
             resolveMember(base, count, spacing, index + 1, result, out);
+        });
+    }
+
+    private CompletableFuture<Location> memberLocation(Location base, int index, int spacing) {
+        int targetX = base.getBlockX() + index * spacing;
+        List<Integer> candidates = new ArrayList<>(MEMBER_COLUMN_RETRIES);
+        candidates.add(targetX);
+        for (int d = 1; candidates.size() < MEMBER_COLUMN_RETRIES; d++) {
+            candidates.add(targetX - d);
+            candidates.add(targetX + d);
+        }
+        CompletableFuture<Location> out = new CompletableFuture<>();
+        tryColumns(base.getWorld(), base.getBlockZ(), candidates, 0, out);
+        return out;
+    }
+
+    private void tryColumns(World world, int z, List<Integer> candidates, int index,
+                            CompletableFuture<Location> out) {
+        if (index >= candidates.size()) {
+            out.complete(null);
+            return;
+        }
+        safeAtColumn(world, candidates.get(index), z).whenComplete((loc, error) -> {
+            if (loc != null) {
+                out.complete(loc);
+            } else {
+                tryColumns(world, z, candidates, index + 1, out);
+            }
         });
     }
 
