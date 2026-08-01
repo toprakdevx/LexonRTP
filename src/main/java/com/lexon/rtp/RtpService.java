@@ -43,6 +43,10 @@ public final class RtpService {
             plugin.messages().send(player, "world-not-found");
             return;
         }
+        if (matchmaking && !plugin.config().isQueueEnabled()) {
+            plugin.messages().send(player, "queue-disabled");
+            return;
+        }
         if (plugin.queue().isQueued(player.getUniqueId())) {
             sendQueueAlready(player);
             return;

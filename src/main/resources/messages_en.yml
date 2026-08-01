@@ -15,6 +15,7 @@ invalid-world: "%prefix%&cɪɴᴠᴀʟɪᴅ ᴡᴏʀʟᴅ. &7/ʀᴛᴘ <ᴏᴠ�
 
 rtp-queued: "%prefix%&7ᴘʀᴇᴘᴀʀɪɴɢ ᴛᴇʟᴇᴘᴏʀᴛ..."
 queue-joined: "%prefix%&aʏᴏᴜ ᴊᴏɪɴᴇᴅ ᴛʜᴇ ǫᴜᴇᴜᴇ! &7ᴡᴀɪᴛɪɴɢ ғᴏʀ ᴏᴘᴘᴏɴᴇɴᴛ... &8(&f%count%&7/&f%required%&8)"
+queue-disabled: "%prefix%&cᴛʜᴇ ᴍᴀᴛᴄʜᴍᴀᴋɪɴɢ ǫᴜᴇᴜᴇ ɪs ᴅɪsᴀʙʟᴇᴅ."
 queue-already: "%prefix%&eʏᴏᴜ ᴀʀᴇ ᴀʟʀᴇᴀᴅʏ ɪɴ ᴛʜᴇ ǫᴜᴇᴜᴇ. &7(&fᴘᴏsɪᴛɪᴏɴ&7: &e%queue%&7)"
 queue-left: "%prefix%&cʏᴏᴜ ʟᴇғᴛ ᴛʜᴇ ǫᴜᴇᴜᴇ."
 queue-not-in: "%prefix%&cʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ɪɴ ᴛʜᴇ ǫᴜᴇᴜᴇ."
