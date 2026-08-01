@@ -31,5 +31,5 @@ countdown-subtitle: "&7ᴛᴇʟᴇᴘᴏʀᴛɪɴɢ..."
 
 searching: "%prefix%&7sᴇᴀʀᴄʜɪɴɢ ғᴏʀ ᴀ sᴀғᴇ ʟᴏᴄᴀᴛɪᴏɴ..."
 teleport-success: "%prefix%&aᴛᴇʟᴇᴘᴏʀᴛᴇᴅ!"
-teleport-failed: "%prefix%&ᴄᴏᴜʟᴅ ɴᴏᴛ ғɪɴᴅ ᴀ sᴀғᴇ ʟᴏᴄᴀᴛɪᴏɴ, ᴘʟᴇᴀsᴇ ᴛʀʏ ᴀɢᴀɪɴ."
-moved-cancelled: "%prefix%&ᴛᴇʟᴇᴘᴏʀᴛ ᴄᴀɴᴄᴇʟʟᴇᴅ ʙᴇᴄᴀᴜsᴇ ʏᴏᴜ ᴍᴏᴠᴇᴅ."
+teleport-failed: "%prefix%&cᴄᴏᴜʟᴅ ɴᴏᴛ ғɪɴᴅ ᴀ sᴀғᴇ ʟᴏᴄᴀᴛɪᴏɴ, ᴘʟᴇᴀsᴇ ᴛʀʏ ᴀɢᴀɪɴ."
+moved-cancelled: "%prefix%&cᴛᴇʟᴇᴘᴏʀᴛ ᴄᴀɴᴄᴇʟʟᴇᴅ ʙᴇᴄᴀᴜsᴇ ʏᴏᴜ ᴍᴏᴠᴇᴅ."
