@@ -105,6 +105,14 @@
                                         <exclude>META-INF/*.RSA</exclude>
                                     </excludes>
                                 </filter>
+                                <!-- sqlite-jdbc classes are loaded reflectively (Class.forName),
+                                     so keep them all out of minimizeJar. -->
+                                <filter>
+                                    <artifact>org.xerial:sqlite-jdbc</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
                             </filters>
                         </configuration>
                     </execution>
