@@ -11,6 +11,7 @@ import java.util.logging.Level;
 
 public final class RedisManager {
     private static final long RECONNECT_TICKS = 20L * 60;
+    private static final long PENDING_RTP_TTL_SECONDS = 30;
 
     private final LexonRTP plugin;
     private final SQLiteStorage sqlite;
@@ -142,7 +143,7 @@ public final class RedisManager {
             return;
         }
         try (Jedis jedis = pool.getResource()) {
-            jedis.setex(pendingKey(uuid), 30, worldKey + ":" + matchmaking);
+            jedis.setex(pendingKey(uuid), PENDING_RTP_TTL_SECONDS, worldKey + ":" + matchmaking);
         } catch (Exception ignored) {
         }
     }

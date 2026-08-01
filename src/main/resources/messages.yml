@@ -12,6 +12,7 @@ cooldown-active: "%prefix%&cᴛᴇᴋʀᴀʀ ᴋᴜʟʟᴀɴᴍᴀᴋ ɪᴄɪɴ 
 world-disabled: "%prefix%&cʙᴜ ᴅᴜɴʏᴀᴅᴀ ʀᴛᴘ ᴋᴀᴘᴀʟɪ."
 world-not-found: "%prefix%&cʜᴇᴅᴇғ ᴅᴜɴʏᴀ ʙᴜʟᴜɴᴀᴍᴀᴅɪ."
 invalid-world: "%prefix%&cɢᴇᴄᴇʀsɪᴢ ᴅᴜɴʏᴀ. &7/ʀᴛᴘ <ᴏᴠᴇʀᴡᴏʀʟᴅ|ɴᴇᴛʜᴇʀ|ᴇɴᴅ>"
+cross-server-unavailable: "%prefix%&cʀᴇᴅɪs ʙᴀɢʟᴀɴᴛɪsɪ ᴏʟᴍᴀᴅᴀɴ ᴄʀᴏss-sᴇʀᴠᴇʀ ʀᴛᴘ ᴋᴜʟʟᴀɴɪʟᴀᴍᴀᴢ."
 
 rtp-queued: "%prefix%&7ɪsɪɴʟᴀɴᴍᴀ ʜᴀᴢɪʀʟᴀɴɪʏᴏʀ..."
 queue-joined: "%prefix%&asɪʀᴀʏᴀ ᴀʟɪɴᴅɪɴ! &7ʀᴀᴋɪᴘ ʙᴇᴋʟᴇɴɪʏᴏʀ... &8(&f%count%&7/&f%required%&8)"
