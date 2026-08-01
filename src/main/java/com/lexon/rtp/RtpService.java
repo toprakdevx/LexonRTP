@@ -28,7 +28,7 @@ public final class RtpService {
         String targetServer = target.getTargetServer();
         if (targetServer != null && !targetServer.isEmpty()) {
             if (!plugin.redis().isConnected()) {
-                plugin.messages().send(player, "invalid-world");
+                plugin.messages().send(player, "cross-server-unavailable");
                 return;
             }
             plugin.redis().savePendingRtp(player.getUniqueId(), worldKey, matchmaking);
