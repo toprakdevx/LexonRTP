@@ -33,6 +33,14 @@ public final class RedisManager {
             plugin.getLogger().info("Redis disabled - using SQLite (storage.db) for cooldown persistence.");
             return;
         }
+        createPool();
+    }
+
+    private synchronized void createPool() {
+        if (pool != null) {
+            return;
+        }
+        var config = plugin.getConfig();
         try {
             JedisPoolConfig poolConfig = new JedisPoolConfig();
             poolConfig.setMaxTotal(config.getInt("redis.pool.max-total", 16));
@@ -44,24 +52,22 @@ public final class RedisManager {
             int timeout = config.getInt("redis.timeout-ms", 2000);
             String password = config.getString("redis.password", "");
             int database = config.getInt("redis.database", 0);
-            if (password == null || password.isEmpty()) {
-                this.pool = new JedisPool(poolConfig, host, port, timeout);
-            } else {
-                this.pool = new JedisPool(poolConfig, host, port, timeout, password, database);
-            }
+            this.pool = new JedisPool(poolConfig, host, port, timeout,
+                    password == null || password.isEmpty() ? null : password, database);
             try (Jedis jedis = pool.getResource()) {
                 jedis.ping();
             }
             this.connected = true;
             plugin.getLogger().info("Redis connection successful (" + host + ":" + port + ").");
         } catch (Exception ex) {
+            this.connected = false;
             plugin.getLogger().log(Level.WARNING,
                     "Redis connection failed, falling back to SQLite: " + ex.getMessage());
         }
     }
 
     public void startReconnect() {
-        if (!enabled || pool == null) {
+        if (!enabled) {
             return;
         }
         plugin.scheduler().globalTimer(this::ensureConnected, RECONNECT_TICKS, RECONNECT_TICKS);
@@ -69,6 +75,10 @@ public final class RedisManager {
 
     private void ensureConnected() {
         if (connected) {
+            return;
+        }
+        createPool();
+        if (pool == null) {
             return;
         }
         try (Jedis jedis = pool.getResource()) {
