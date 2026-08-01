@@ -29,7 +29,8 @@ public final class SQLiteStorage {
             if (parent != null && !parent.exists()) {
                 parent.mkdirs();
             }
-            Class.forName("org.sqlite.JDBC");
+            // Relocated by maven-shade-plugin (see pom.xml relocations)
+            Class.forName("com.lexon.rtp.libs.sqlite.JDBC");
             this.connection = DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("PRAGMA journal_mode=WAL");
