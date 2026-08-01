@@ -7,6 +7,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -69,7 +70,7 @@ public final class ConfigManager {
                 if (s == null) {
                     continue;
                 }
-                worlds.put(key.toLowerCase(), new WorldSettings(
+                worlds.put(key.toLowerCase(Locale.ROOT), new WorldSettings(
                         key,
                         s.getString("world-name", key),
                         s.getBoolean("enabled", true),
@@ -84,7 +85,7 @@ public final class ConfigManager {
     }
 
     public WorldSettings getWorld(String key) {
-        return key == null ? null : worlds.get(key.toLowerCase());
+        return key == null ? null : worlds.get(key.toLowerCase(Locale.ROOT));
     }
 
     public Map<String, WorldSettings> getWorlds() {

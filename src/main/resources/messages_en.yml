@@ -36,8 +36,11 @@ teleport-failed: "%prefix%&cᴄᴏᴜʟᴅ ɴᴏᴛ ғɪɴᴅ ᴀ sᴀғᴇ ʟ�
 moved-cancelled: "%prefix%&cᴛᴇʟᴇᴘᴏʀᴛ ᴄᴀɴᴄᴇʟʟᴇᴅ ʙᴇᴄᴀᴜsᴇ ʏᴏᴜ ᴍᴏᴠᴇᴅ."
 rtp-cancelled: "%prefix%&aᴛᴇʟᴇᴘᴏʀᴛ ᴄᴀɴᴄᴇʟʟᴇᴅ."
 rtp-cancel-none: "%prefix%&cʏᴏᴜ ʜᴀᴠᴇ ɴᴏ ᴀᴄᴛɪᴠᴇ ᴛᴇʟᴇᴘᴏʀᴛ ᴛᴏ ᴄᴀɴᴄᴇʟ."
+rtp-usage: "%prefix%&cᴜsᴀɢᴇ&8: &7/ʀᴛᴘ [ᴄᴀɴᴄᴇʟ|ᴡᴏʀʟᴅ|<ᴘʟᴀʏᴇʀ> <ᴡᴏʀʟᴅ>]"
 player-not-found: "%prefix%&cᴘʟᴀʏᴇʀ ɴᴏᴛ ғᴏᴜɴᴅ ᴏʀ ᴏғғʟɪɴᴇ."
 reloaded: "%prefix%&aᴄᴏɴғɪɢᴜʀᴀᴛɪᴏɴ ᴀɴᴅ ᴍᴇssᴀɢᴇs ʀᴇʟᴏᴀᴅᴇᴅ."
+admin-rtp-success: "%prefix%&a%player% &7ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ ᴛᴏ &f%world%&7."
+admin-rtp-fail: "%prefix%&cᴛᴇʟᴇᴘᴏʀᴛ ғᴀɪʟᴇᴅ ғᴏʀ &f%player%&c."
 lexonrtp-help:
   - "%prefix%&8» &aʟᴇxᴏɴʀᴛᴘ &7ᴄᴏᴍᴍᴀɴᴅs"
   - "&a/lexonrtp reload &8» &7ʀᴇʟᴏᴀᴅ ᴄᴏɴғɪɢ & ᴍᴇssᴀɢᴇs"

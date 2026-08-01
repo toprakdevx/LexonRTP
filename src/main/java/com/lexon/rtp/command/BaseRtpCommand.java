@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public abstract class BaseRtpCommand implements TabExecutor {
     protected final LexonRTP plugin;
@@ -47,6 +48,6 @@ public abstract class BaseRtpCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return args.length == 1 ? worldKeys(args[0].toLowerCase()) : List.of();
+        return args.length == 1 ? worldKeys(args[0].toLowerCase(Locale.ROOT)) : List.of();
     }
 }

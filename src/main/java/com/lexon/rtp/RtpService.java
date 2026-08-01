@@ -4,6 +4,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.lexon.rtp.config.WorldSettings;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -16,23 +17,31 @@ public final class RtpService {
     }
 
     public void request(Player player, String worldKey, boolean matchmaking) {
+        request(player, worldKey, matchmaking, null);
+    }
+
+    public void request(Player player, String worldKey, boolean matchmaking, CommandSender requester) {
         WorldSettings target = plugin.config().getWorld(worldKey);
         if (target == null) {
             plugin.messages().send(player, "invalid-world");
+            feedback(requester, player, "invalid-world");
             return;
         }
         if (!target.isEnabled()) {
             plugin.messages().send(player, "world-disabled");
+            feedback(requester, player, "world-disabled");
             return;
         }
         String targetServer = target.getTargetServer();
         if (targetServer != null && !targetServer.isEmpty()) {
             if (!plugin.redis().isConnected()) {
                 plugin.messages().send(player, "cross-server-unavailable");
+                feedback(requester, player, "cross-server-unavailable");
                 return;
             }
             plugin.redis().savePendingRtp(player.getUniqueId(), worldKey, matchmaking);
             plugin.messages().send(player, "rtp-queued");
+            feedback(requester, player, "rtp-queued");
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
             out.writeUTF("Connect");
             out.writeUTF(targetServer);
@@ -41,29 +50,37 @@ public final class RtpService {
         }
         if (Bukkit.getWorld(target.getWorldName()) == null) {
             plugin.messages().send(player, "world-not-found");
+            feedback(requester, player, "world-not-found");
             return;
         }
         if (matchmaking && !plugin.config().isQueueEnabled()) {
             plugin.messages().send(player, "queue-disabled");
+            feedback(requester, player, "queue-disabled");
             return;
         }
         if (plugin.queue().isQueued(player.getUniqueId())) {
             sendQueueAlready(player);
+            feedback(requester, player, "queue-already",
+                    "%queue%", String.valueOf(plugin.queue().positionOf(player.getUniqueId())));
             return;
         }
         if (!player.hasPermission("lexonrtp.cooldown.bypass")) {
             long remaining = plugin.redis().getRemaining(player.getUniqueId());
             if (remaining > 0) {
                 plugin.messages().send(player, "cooldown-active", "%time%", String.valueOf(remaining));
+                feedback(requester, player, "cooldown-active", "%time%", String.valueOf(remaining));
                 return;
             }
         }
-        if (!plugin.queue().enqueue(player, target, matchmaking)) {
+        if (!plugin.queue().enqueue(player, target, matchmaking, requester)) {
             sendQueueAlready(player);
+            feedback(requester, player, "queue-already",
+                    "%queue%", String.valueOf(plugin.queue().positionOf(player.getUniqueId())));
             return;
         }
         if (!matchmaking) {
             plugin.messages().send(player, "rtp-queued");
+            feedback(requester, player, "rtp-queued");
             return;
         }
         int count = plugin.queue().matchSize(target.getKey());
@@ -72,8 +89,18 @@ public final class RtpService {
                 "%count%", String.valueOf(count),
                 "%required%", String.valueOf(required),
                 "%queue%", String.valueOf(plugin.queue().positionOf(player.getUniqueId())));
+        feedback(requester, player, "queue-joined",
+                "%count%", String.valueOf(count),
+                "%required%", String.valueOf(required),
+                "%queue%", String.valueOf(plugin.queue().positionOf(player.getUniqueId())));
         if (count < required && plugin.config().isAnnounceWaiting()) {
             broadcastWaiting(player, count, required);
+        }
+    }
+
+    private void feedback(CommandSender requester, Player player, String path, String... replacements) {
+        if (requester != null && requester != player) {
+            plugin.messages().send(requester, path, replacements);
         }
     }
 

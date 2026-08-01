@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.Locale;
 
 public final class RtpQueueCommand extends BaseRtpCommand {
     public RtpQueueCommand(LexonRTP plugin) {
@@ -28,14 +29,14 @@ public final class RtpQueueCommand extends BaseRtpCommand {
             }
             return true;
         }
-        plugin.rtpService().request(player, args[0].toLowerCase(), true);
+        plugin.rtpService().request(player, args[0].toLowerCase(Locale.ROOT), true);
         return true;
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            String prefix = args[0].toLowerCase();
+            String prefix = args[0].toLowerCase(Locale.ROOT);
             List<String> matches = worldKeys(prefix);
             if ("leave".startsWith(prefix)) {
                 matches.add("leave");

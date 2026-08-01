@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 
 import java.util.List;
+import java.util.Locale;
 
 public final class LexonRtpCommand implements TabExecutor {
     private final LexonRTP plugin;
@@ -39,7 +40,7 @@ public final class LexonRtpCommand implements TabExecutor {
             return List.of();
         }
         if (args.length == 1) {
-            String prefix = args[0].toLowerCase();
+            String prefix = args[0].toLowerCase(Locale.ROOT);
             if ("reload".startsWith(prefix)) {
                 return List.of("reload");
             }
