@@ -1,5 +1,6 @@
 package com.lexon.rtp;
 
+import com.lexon.rtp.command.LexonRtpCommand;
 import com.lexon.rtp.command.RtpCommand;
 import com.lexon.rtp.command.RtpQueueCommand;
 import com.lexon.rtp.config.ConfigManager;
@@ -42,6 +43,7 @@ public final class LexonRTP extends JavaPlugin {
         this.queueManager.start();
         register("rtp", new RtpCommand(this));
         register("rtpqueue", new RtpQueueCommand(this));
+        register("lexonrtp", new LexonRtpCommand(this));
         getServer().getPluginManager().registerEvents(new MenuListener(this), this);
         getServer().getPluginManager().registerEvents(new CrossServerListener(this), this);
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
@@ -99,5 +101,14 @@ public final class LexonRTP extends JavaPlugin {
 
     public RtpService rtpService() {
         return rtpService;
+    }
+
+    public void reloadPlugin() {
+        configManager.load();
+        messageManager.load();
+        this.locationFinder = new LocationFinder(this);
+        queueManager.start();
+        redisManager.reload();
+        getLogger().info("LexonRTP reloaded.");
     }
 }

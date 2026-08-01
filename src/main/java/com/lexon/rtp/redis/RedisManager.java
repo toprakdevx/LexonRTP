@@ -2,6 +2,7 @@ package com.lexon.rtp.redis;
 
 import com.lexon.rtp.LexonRTP;
 import com.lexon.rtp.storage.SQLiteStorage;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -17,6 +18,7 @@ public final class RedisManager {
     private final SQLiteStorage sqlite;
     private String keyPrefix = "lexonrtp:";
     private JedisPool pool;
+    private ScheduledTask reconnectTask;
     private volatile boolean enabled;
     private volatile boolean connected;
 
@@ -71,7 +73,13 @@ public final class RedisManager {
         if (!enabled) {
             return;
         }
-        plugin.scheduler().globalTimer(this::ensureConnected, RECONNECT_TICKS, RECONNECT_TICKS);
+        if (reconnectTask != null) {
+            try {
+                reconnectTask.cancel();
+            } catch (Throwable ignored) {
+            }
+        }
+        reconnectTask = plugin.scheduler().globalTimer(this::ensureConnected, RECONNECT_TICKS, RECONNECT_TICKS);
     }
 
     private void ensureConnected() {
@@ -180,13 +188,27 @@ public final class RedisManager {
     }
 
     public void close() {
+        if (reconnectTask != null) {
+            try {
+                reconnectTask.cancel();
+            } catch (Throwable ignored) {
+            }
+            reconnectTask = null;
+        }
         if (pool != null) {
             try {
                 pool.close();
             } catch (Exception ignored) {
             }
+            pool = null;
         }
         sqlite.close();
         connected = false;
+    }
+
+    public void reload() {
+        close();
+        connect();
+        startReconnect();
     }
 }

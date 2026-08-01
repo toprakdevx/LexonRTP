@@ -22,15 +22,19 @@ High performance Random Teleport plugin with 1v1 matchmaking, Redis cross-server
 |---|---|
 | `/rtp` | Opens solo teleport menu |
 | `/rtp <world>` | Direct teleport to specified world |
+| `/rtp cancel` | Cancel an active solo teleport countdown |
+| `/rtp <player> <world>` | Admin: teleport another player (requires `lexonrtp.admin`) |
 | `/rtpqueue` | Opens 1v1 matchmaking menu |
 | `/rtpqueue <world>` | Join queue for specified world |
 | `/rtpqueue leave` | Leave the queue |
+| `/lexonrtp reload` | Admin: reload config & messages without restart (requires `lexonrtp.admin`) |
 
 ## Permissions
 
 | Permission | Default | Description |
 |---|---|---|
 | `lexonrtp.use` | `true` | Use RTP commands |
+| `lexonrtp.admin` | `op` | Reload plugin and RTP other players |
 | `lexonrtp.cooldown.bypass` | `op` | Bypass cooldown |
 
 ## Installation

@@ -43,11 +43,20 @@ public final class Scheduler {
     }
 
     public void entity(Entity entity, Runnable task) {
-        entity.getScheduler().run(plugin, t -> task.run(), null);
+        try {
+            entity.getScheduler().run(plugin, t -> task.run(), null);
+        } catch (IllegalStateException ex) {
+            Bukkit.getGlobalRegionScheduler().run(plugin, t -> task.run());
+        }
     }
 
     public void entityLater(Entity entity, Runnable task, long delayTicks) {
-        entity.getScheduler().runDelayed(plugin, t -> task.run(), null, Math.max(1L, delayTicks));
+        long delay = Math.max(1L, delayTicks);
+        try {
+            entity.getScheduler().runDelayed(plugin, t -> task.run(), null, delay);
+        } catch (IllegalStateException ex) {
+            Bukkit.getGlobalRegionScheduler().runDelayed(plugin, t -> task.run(), delay);
+        }
     }
 
     public void shutdown() {

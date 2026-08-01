@@ -4,29 +4,29 @@ import com.lexon.rtp.LexonRTP;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 public final class ConfigManager {
     private final LexonRTP plugin;
 
-    private String language;
-    private long cooldownSeconds;
-    private boolean cooldownOnFail;
-    private int rtpCountdown;
-    private boolean queueEnabled;
-    private int playersPerCycle;
-    private long cycleIntervalTicks;
-    private int requiredPlayers;
-    private int matchCountdown;
-    private int matchSpacing;
-    private boolean announceWaiting;
-    private int maxAttempts;
-    private int netherScanTop;
-    private int netherScanBottom;
+    private volatile String language;
+    private volatile long cooldownSeconds;
+    private volatile boolean cooldownOnFail;
+    private volatile int rtpCountdown;
+    private volatile boolean queueEnabled;
+    private volatile int playersPerCycle;
+    private volatile long cycleIntervalTicks;
+    private volatile int requiredPlayers;
+    private volatile int matchCountdown;
+    private volatile int matchSpacing;
+    private volatile boolean announceWaiting;
+    private volatile int maxAttempts;
+    private volatile int netherScanTop;
+    private volatile int netherScanBottom;
 
     private final Set<Material> unsafeBlocks = EnumSet.noneOf(Material.class);
     private final Map<String, WorldSettings> worlds = new LinkedHashMap<>();
@@ -69,7 +69,7 @@ public final class ConfigManager {
                 if (s == null) {
                     continue;
                 }
-                worlds.put(key.toLowerCase(), new WorldSettings(
+                worlds.put(key.toLowerCase(Locale.ROOT), new WorldSettings(
                         key,
                         s.getString("world-name", key),
                         s.getBoolean("enabled", true),
@@ -84,11 +84,11 @@ public final class ConfigManager {
     }
 
     public WorldSettings getWorld(String key) {
-        return key == null ? null : worlds.get(key.toLowerCase());
+        return key == null ? null : worlds.get(key.toLowerCase(Locale.ROOT));
     }
 
     public Map<String, WorldSettings> getWorlds() {
-        return Collections.unmodifiableMap(worlds);
+        return Map.copyOf(worlds);
     }
 
     public String getLanguage() {
@@ -148,6 +148,6 @@ public final class ConfigManager {
     }
 
     public Set<Material> getUnsafeBlocks() {
-        return Collections.unmodifiableSet(unsafeBlocks);
+        return Set.copyOf(unsafeBlocks);
     }
 }

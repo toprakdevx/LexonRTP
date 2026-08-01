@@ -15,11 +15,18 @@ commands:
     description: Join or leave the 1v1 matchmaking queue.
     usage: /rtpqueue [overworld|nether|end|leave]
     aliases: [rtpq, queue]
+  lexonrtp:
+    description: Admin commands (reload, help).
+    usage: /lexonrtp reload
+    aliases: [lrtp]
 
 permissions:
   lexonrtp.use:
     description: Permission to use the RTP command.
     default: true
+  lexonrtp.admin:
+    description: Reload the plugin and teleport other players.
+    default: op
   lexonrtp.cooldown.bypass:
     description: Permission to bypass cooldown.
     default: op

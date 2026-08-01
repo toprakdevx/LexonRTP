@@ -16,8 +16,8 @@ import java.util.List;
 
 public final class MessageManager {
     private final LexonRTP plugin;
-    private FileConfiguration messages;
-    private String prefix = "";
+    private volatile FileConfiguration messages;
+    private volatile String prefix = "";
 
     public MessageManager(LexonRTP plugin) {
         this.plugin = plugin;
@@ -79,6 +79,17 @@ public final class MessageManager {
         String message = get(path, replacements);
         if (!message.isBlank()) {
             target.sendMessage(message);
+        }
+    }
+
+    public void sendList(CommandSender target, String path, String... replacements) {
+        if (target == null) {
+            return;
+        }
+        for (String line : getList(path, replacements)) {
+            if (!line.isBlank()) {
+                target.sendMessage(line);
+            }
         }
     }
 }
